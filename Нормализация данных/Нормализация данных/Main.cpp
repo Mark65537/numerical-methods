@@ -1,46 +1,92 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-#include <iterator>
 #include <random>
-#include <cstddef>
 #include <vector>
+
 using namespace std;
 
-auto print_v = [](const  vector<double>& v)
+// Печать всей матрицы
+void printMatrix(const vector<vector<double>>& matrix)
+{
+    for (const auto& row : matrix)
     {
-        copy(v.begin(), v.end(), ostream_iterator<double>
-            (cout << fixed << setprecision(2), " "));
-        cout << endl;
-    };
+        for (double x : row)
+            cout << fixed << setprecision(2) << x << " ";
+
+        cout << '\n';
+    }
+}
+
+// Генерация матрицы случайными числами
+vector<vector<double>> generateMatrix(size_t M, size_t N)
+{
+    // Инициализация генератора случайных чисел
+    mt19937 gen(random_device{}());
+
+    vector<vector<double>> matrix(M, vector<double>(N));
+
+    uniform_int_distribution<int> dist(10, 99);
+
+    for (auto& row : matrix)
+    {
+        // Заполняем строку случайными числами
+        generate(row.begin(), row.end(), [&]() {
+            return static_cast<double>(dist(gen));
+            });
+    }
+
+    return matrix;
+}
+
+// Поиск максимального элемента во всей матрице
+double findMax(const vector<vector<double>>& matrix)
+{
+    double maxVal = 0.0;
+
+    for (const auto& row : matrix)
+    {
+        // Ищем максимум в строке и сравниваем с глобальным
+        maxVal = max(maxVal, *max_element(row.begin(), row.end()));
+    }
+
+    return maxVal;
+}
+
+// Нормализация матрицы (деление на максимум)
+void normalizeMatrix(vector<vector<double>>& matrix, double maxVal)
+{
+    for (auto& row : matrix)
+    {
+        for (double& x : row)
+        {
+            x /= maxVal;
+        }
+    }
+}
+
 int main()
 {
     size_t M, N;
-    cin >> M >> N;
-    vector < vector<double> > A(M, vector<double>(N));
-    mt19937 gen; { random_device()(); };
-    uniform_int_distribution<int> uid(10, 99);
 
-    double max = 1.0;
-    bool maxSet = false;
-    cout << "Before:\n";
-    for (auto& v : A)
-    {
-        generate(v.begin(), v.begin() + N, [&uid, &gen]
-            { return static_cast<double>(uid(gen)); });
-        print_v(v);
-        int m = *max_element(v.begin(), v.end());
-        if (!maxSet || m > max)
-        {
-            max = m;
-            maxSet = true;
-        }
-    }
-    cout << "\nAfter:\n";
-    for (auto& v : A)
-    {
-        for_each(v.begin(), v.end(), [&max](double& x) { x /= max; });
-        print_v(v);
-    }
-    system("pause");
+    // Подсказка пользователю
+    cout << "Enter number of rows (M) and columns (N): ";
+    cin >> M >> N;
+
+    // Генерация матрицы
+    auto matrix = generateMatrix(M, N);
+
+    cout << "\nBefore:\n";
+    printMatrix(matrix);
+
+    // Поиск максимума
+    double maxVal = findMax(matrix);
+
+    // Нормализация
+    normalizeMatrix(matrix, maxVal);
+
+    cout << "\nAfter (normalized):\n";
+    printMatrix(matrix);
+
+    return 0;
 }
