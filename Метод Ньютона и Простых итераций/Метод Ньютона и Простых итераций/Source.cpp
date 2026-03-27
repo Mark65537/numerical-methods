@@ -16,9 +16,7 @@ using namespace std;
  */
 float f(float x)
 {
-    float funk;
-    funk = sin(x * x) - 6 * x + 1;
-    return funk;
+    return sin(x * x) - 6 * x + 1;
 }
 
 /**
@@ -33,11 +31,22 @@ float f(float x)
  * @param x Текущее приближение.
  * @return Следующее приближение.
  */
-float f_2(float x)
+float phi(float x)
 {
-    float funk;
-    funk = (sin(x * x) + 1) / 6;
-    return funk;
+    return (sin(x * x) + 1) / 6;
+}
+
+/**
+ * @brief Производная (численно, через конечные разности)
+ *
+ *
+ * @param x
+ * @return
+ */
+float derivative(float x)
+{
+    const float h = 1e-5f;
+    return (f(x + h) - f(x)) / h;
 }
 
 /**
@@ -56,16 +65,16 @@ float f_2(float x)
  * @param x Текущее значение (обычно начальное значение).
  * @param eps Точность (критерий остановки).
  */
-void method(float x0, float x, float eps)
+float newton(float x0, float eps)
 {
-    float df = (f(x0 + 0.0001) - f(x0)) / ((x0 + 0.0001) - x0), xk;
-    x = x0;
+    float x;
     do
     {
-        x0 = x;
-        x = x - (f(x) / df);
-    } while (abs(x - x0) < eps);
-    cout << x << endl;
+        x = x0;
+        x0 = x - f(x) / derivative(x); // пересчёт производной на каждом шаге
+    } while (abs(x0 - x) > eps);
+
+    return x0;
 }
 
 /**
@@ -83,15 +92,16 @@ void method(float x0, float x, float eps)
  * @param x Текущее значение (начальное значение).
  * @param eps Точность (критерий остановки).
  */
-void method_2(float x0, float x, float eps)
+float simpleIteration(float x0, float eps)
 {
+    float x;
     do
     {
-        x0 = x;
-        x = f_2(x0);
-
+        x = x0;
+        x0 = phi(x);
     } while (abs(x0 - x) > eps);
-    cout << x << endl;
+
+    return x0;
 }
 
 /**
@@ -108,15 +118,14 @@ void method_2(float x0, float x, float eps)
  *
  * Выводит найденные корни в консоль.
  */
-void main()
+int main()
 {
-    float x0, x, eps;
+    float x0, eps;
     x0 = 0.1;
-    x = 0;
     eps = 0.000001;
 
-    method(x0, x, eps);
-    method_2(x0, x, eps);
+    cout << "Newton: " << newton(x0, eps) << endl;
+    cout << "Iteration: " << simpleIteration(x0, eps) << endl;
 
-    system("pause");
+    return 0;
 }
