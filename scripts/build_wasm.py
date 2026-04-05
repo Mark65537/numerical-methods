@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """—обирает консольные проекты в WebAssembly (Emscripten). ѕути с кириллицей в Unicode Ч надЄжно на Linux CI."""
 from __future__ import annotations
 
