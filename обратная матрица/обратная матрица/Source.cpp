@@ -11,7 +11,7 @@ template <typename T> void TransponMtx(T **matr, T **tMatr, int n);
 void Get_matr(int **matr, int n, int **temp_matr, int indRow, int indCol);
 int Det(int **matr, int n);
 
-void main()
+int main()
 {
 	srand((unsigned)time(NULL));
 	setlocale(0, "");
@@ -52,7 +52,7 @@ void main()
 	FreeMem(tobr_matr, n);
 	FreeMem(matr, n);
 	FreeMem(obr_matr, n);
-	system("pause");
+	return 0;
 }
 //Функция транспонирования матрицы
 template <typename T> void TransponMtx(T **matr, T **tMatr, int n) {//

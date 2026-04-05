@@ -1,0 +1,39 @@
+name: Build WASM and push to gh-pages
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #     - master
+  #     - gh-actions
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wasm-gh-pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.51
+          actions-cache-folder: emsdk-cache
+
+      - name: Build WebAssembly
+        run: bash scripts/build-wasm.sh
+
+      - name: Push to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: wasm-site
+          force_orphan: true
