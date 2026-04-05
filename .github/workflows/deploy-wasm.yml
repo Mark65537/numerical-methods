@@ -1,11 +1,11 @@
 name: Build WASM and push to gh-pages
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #     - master
-  #     - gh-actions
+  push:
+    branches:
+      - main
+      - master
+      - gh-actions
   workflow_dispatch:
 
 permissions:
