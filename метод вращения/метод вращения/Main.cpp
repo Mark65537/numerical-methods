@@ -80,8 +80,10 @@ void reshenie(int stroka_1, int stroka_A)
 
 int main()
 {
-	SetConsoleCP(1251);
-	SetConsoleOutputCP(1251);
+#if defined(_WIN32) && !defined(__EMSCRIPTEN__)
+	SetConsoleOutputCP(65001); // UTF-8
+	SetConsoleCP(65001);
+#endif
 	for (int i = 0; i < n; i++)
 	{
 		x[i] = 0;
