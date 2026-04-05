@@ -29,7 +29,10 @@ jobs:
           actions-cache-folder: emsdk-cache
 
       - name: Build WebAssembly
-        run: bash scripts/build-wasm.sh
+        env:
+          LANG: C.UTF-8
+          LC_ALL: C.UTF-8
+        run: python3 scripts/build_wasm.py
 
       - name: Push to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
