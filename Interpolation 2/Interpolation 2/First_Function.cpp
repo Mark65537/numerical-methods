@@ -1,6 +1,6 @@
 #include "Functions.h"
 
-//вычисление значение функции
+//РІС‹С‡РёСЃР»РµРЅРёРµ Р·РЅР°С‡РµРЅРёРµ С„СѓРЅРєС†РёРё
 
 long double First_Funct(long double& x)
 {
