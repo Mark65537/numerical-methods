@@ -107,7 +107,7 @@ def main() -> None:
             em_flags.extend(["--preload-file", f"{srcdir}@/"])
 
         sources = [str(srcdir / name) for name in cpp_files]
-        cmd = ["em++", *em_flags, *sources, "-o", str(out_dir / "index.html")]
+        cmd = ["em++", *em_flags, *sources, "-o", str(out_dir / "index.html"), "-s", "ENVIRONMENT=web", "-s", "EXIT_RUNTIME=1"]
         subprocess.run(cmd, check=True, cwd=str(REPO_ROOT))
         print(f"ok: {slug}")
 
