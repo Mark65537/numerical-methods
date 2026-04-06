@@ -32,7 +32,7 @@ jobs:
         env:
           LANG: C.UTF-8
           LC_ALL: C.UTF-8
-        run: python3 scripts/build_wasm.py
+        run: python3 wasm/build/build_wasm.py
 
       - name: Push to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
