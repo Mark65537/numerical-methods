@@ -109,9 +109,10 @@ def main() -> None:
         sources = [str(srcdir / name) for name in cpp_files]
         cmd = ["em++", *em_flags, *sources, "-o", str(out_dir / "main.js")]
         subprocess.run(cmd, check=True, cwd=str(REPO_ROOT))
+        shutil.copy(REPO_ROOT / "template.html", out_dir / "index.html")
         print(f"ok: {slug}")
 
-    (OUT / "index.html").write_text(INDEX_HTML, encoding="utf-8")
+    shutil.copy(REPO_ROOT / "index.html", OUT / "index.html")
     print(f"Artifacts: {OUT}")
 
 

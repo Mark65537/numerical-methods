@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>WASM Console</title>
+</head>
+<body>
+  <h2>Вывод программы:</h2>
+  <pre id="output"></pre>
+
+  <script>
+    var Module = {
+      print: (text) => {
+        document.getElementById("output").textContent += text + "\n";
+      },
+      printErr: (text) => {
+        document.getElementById("output").textContent += "[ERR] " + text + "\n";
+      }
+    };
+  </script>
+
+  <script src="main.js"></script>
+</body>
+</html>
