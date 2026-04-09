@@ -128,7 +128,7 @@
     <div class="title-bar">
       <div class="title-bar-icon"></div>
       <span class="title-bar-text">C:\WASM Console</span>
-      <button class="back-btn" onclick="window.location.href='index.html'">← Назад</button>
+      <button class="back-btn" onclick="window.location.href='../index.html'">← Назад</button>
     </div>
     <div class="content">
       <pre id="output"><span class="prompt">C:\&gt;</span> <span class="cursor"></span></pre>
@@ -140,14 +140,21 @@
     var cursorEl = outputEl.querySelector(".cursor");
 
     function appendText(text, isError = false) {
-      // Remove cursor before appending
-      var cursor = outputEl.removeChild(cursorEl);
+      var cursor = outputEl.querySelector(".cursor");
+
+      if (cursor) {
+        outputEl.removeChild(cursor);
+      }
 
       var span = document.createElement("span");
       span.textContent = text + "\n";
       span.className = isError ? "error" : "";
 
-      outputEl.insertBefore(span, cursor);
+      var newCursor = document.createElement("span");
+      newCursor.className = "cursor";
+
+      outputEl.appendChild(span);
+      outputEl.appendChild(newCursor);
       outputEl.scrollTop = outputEl.scrollHeight;
     }
 
