@@ -101,6 +101,10 @@ def main() -> None:
     projects_root: Path = PROJECTS_DIR.resolve()
 
     # проверки на существование файлов и папок
+    if gh_action_output.exists():
+        shutil.rmtree(gh_action_output)
+    gh_action_output.mkdir(parents=True)
+
     if not projects_root.is_dir():
         print(f"error: projects dir not found: {projects_root}", file=sys.stderr)
         sys.exit(1)
@@ -125,14 +129,6 @@ def main() -> None:
     if not projects:
         print("error: no projects found to build.", file=sys.stderr)
         sys.exit(1)
-
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
-    out_dir.mkdir(parents=True)
-
-
-    # Содержимое HTML-шаблона главной страницы со списком проектов.
-    index_template = INDEX_TEMPLATE_PATH.read_text(encoding="utf-8")
 
     # Итерация по проектам: slug, директория исходников, список `.cpp` файлов.
     for project in projects:
@@ -167,7 +163,7 @@ def main() -> None:
         print(f"ok: {out_dir}")
 
     (out_dir / "index.html").write_text(
-        render_index(projects, index_template),
+        render_index(projects, INDEX_TEMPLATE_PATH.read_text(encoding="utf-8")),
         encoding="utf-8",
     )
     print(f"Artifacts: {out_dir}")
