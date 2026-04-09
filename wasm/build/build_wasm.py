@@ -166,8 +166,7 @@ def main() -> None:
         render_index(projects, INDEX_TEMPLATE_PATH.read_text(encoding="utf-8")),
         encoding="utf-8",
     )
-    print(f"Artifacts: {out_dir}")
-
+    shutil.copy(INDEX_TEMPLATE_PATH, gh_action_output / "index.html")
 
 if __name__ == "__main__":
     main()
