@@ -5,16 +5,177 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Численные методы — WebAssembly</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
-    ul { padding-left: 1.2rem; }
-    a { color: #0b57d0; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0c0c0c;
+      color: #cccccc;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 10px;
+    }
+
+    .window {
+      background-color: #0c0c0c;
+      border: 1px solid #3f3f3f;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .title-bar {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #3f3f3f;
+    }
+
+    .title-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .title-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.3);
+    }
+
+    .title-btn.close { background-color: #f44747; }
+    .title-btn.minimize { background-color: #ffb900; }
+    .title-btn.maximize { background-color: #69c746; }
+
+    .title-text {
+      color: #cccccc;
+      font-size: 12px;
+      flex: 1;
+      text-align: center;
+      margin-right: 50px;
+    }
+
+    .menu-bar span {
+      margin-right: 15px;
+      color: #888;
+    }
+
+    .menu-bar span:first-letter {
+      text-decoration: underline;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    h1 {
+      color: #569cd6;
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      font-weight: normal;
+      border-bottom: 1px solid #3f3f3f;
+      padding-bottom: 10px;
+    }
+
+    p {
+      color: #888;
+      margin: 0 0 20px 0;
+      line-height: 1.6;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    a {
+      color: #569cd6;
+      text-decoration: none;
+      display: block;
+    }
+
+    a:hover {
+      color: #9cdcfe;
+      text-decoration: underline;
+    }
+
+    a::before {
+      content: "▸ ";
+      color: #6a9955;
+    }
+
+    .description {
+      color: #6a9955;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: #264f78;
+      color: #9cdcfe;
+      padding: 2px 6px;
+      font-size: 11px;
+      margin-left: 10px;
+      border-radius: 2px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 16px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f3f;
+      border: 3px solid #1a1a1a;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
-  <h1>Численные методы (WASM)</h1>
-  <p>Сборки Emscripten для запуска в браузере. Для ввода с клавиатуры используйте поля ввода в странице (stdin).</p>
-  <ul>
-    {{PROJECTS}}
-  </ul>
+  <div class="container">
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-buttons">
+          <div class="title-btn close"></div>
+          <div class="title-btn minimize"></div>
+          <div class="title-btn maximize"></div>
+        </div>
+        <span class="title-text">Численные методы — WebAssembly</span>
+      </div>
+      <div class="content">
+        <h1>Численные методы (WASM)</h1>
+        <p>Сборки Emscripten для запуска в браузере. Для ввода с клавиатуры используйте поля ввода в странице (stdin).</p>
+        <ul>
+          {{PROJECTS}}
+        </ul>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

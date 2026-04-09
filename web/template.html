@@ -3,18 +3,160 @@
 <head>
   <meta charset="utf-8">
   <title>WASM Console</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0c0c0c;
+      color: #cccccc;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 14px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #3f3f3f;
+      margin: 10px;
+      background-color: #0c0c0c;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .title-bar {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #3f3f3f;
+    }
+
+    .title-bar-icon {
+      width: 16px;
+      height: 16px;
+      background-color: #3f3f3f;
+      border-radius: 2px;
+    }
+
+    .title-bar-text {
+      color: #cccccc;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .back-btn {
+      background-color: #3f3f3f;
+      color: #cccccc;
+      border: 1px solid #555;
+      padding: 4px 12px;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .back-btn:hover {
+      background-color: #555;
+    }
+
+    .back-btn:active {
+      background-color: #264f78;
+    }
+
+    .content {
+      flex: 1;
+      padding: 8px 10px;
+      overflow-y: auto;
+    }
+
+    #output {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: #cccccc;
+      line-height: 1.4;
+    }
+
+    .prompt {
+      color: #569cd6;
+    }
+
+    .error {
+      color: #f44747;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background-color: #cccccc;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 16px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f3f;
+      border: 3px solid #1a1a1a;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
 </head>
 <body>
-  <h2>Вывод программы:</h2>
-  <pre id="output"></pre>
+  <div class="window">
+    <div class="title-bar">
+      <div class="title-bar-icon"></div>
+      <span class="title-bar-text">C:\WASM Console</span>
+      <button class="back-btn" onclick="window.location.href='index.html'">← Назад</button>
+    </div>
+    <div class="content">
+      <pre id="output"><span class="prompt">C:\&gt;</span> <span class="cursor"></span></pre>
+    </div>
+  </div>
 
   <script>
+    var outputEl = document.getElementById("output");
+    var cursorEl = outputEl.querySelector(".cursor");
+
+    function appendText(text, isError = false) {
+      // Remove cursor before appending
+      var cursor = outputEl.removeChild(cursorEl);
+
+      var span = document.createElement("span");
+      span.textContent = text + "\n";
+      span.className = isError ? "error" : "";
+
+      outputEl.insertBefore(span, cursor);
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+
     var Module = {
       print: (text) => {
-        document.getElementById("output").textContent += text + "\n";
+        appendText(text, false);
       },
       printErr: (text) => {
-        document.getElementById("output").textContent += "[ERR] " + text + "\n";
+        appendText(text, true);
       }
     };
   </script>
