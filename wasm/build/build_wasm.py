@@ -162,7 +162,7 @@ def main() -> None:
         shutil.copy(TEMPLATE_HTML, out_dir / "index.html")
         print(f"ok: {out_dir}")
 
-    (INDEX_TEMPLATE_PATH / "index.html").write_text(
+    INDEX_TEMPLATE_PATH.write_text(
         render_index(projects, INDEX_TEMPLATE_PATH.read_text(encoding="utf-8")),
         encoding="utf-8",
     )
