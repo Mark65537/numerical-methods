@@ -39,6 +39,65 @@
       line-height: 1.4;
     }
 
+    .spoiler {
+      margin: 10px 16px;
+      border: 1px solid #3f3f3f;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .spoiler-header {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .spoiler-header:hover {
+      background: linear-gradient(to bottom, #3d3d3d, #2a2a2a);
+    }
+
+    .spoiler-title {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .spoiler-toggle {
+      color: #569cd6;
+      font-size: 12px;
+    }
+
+    .spoiler-content {
+      padding: 12px;
+      background-color: #0c0c0c;
+      color: #888;
+      font-size: 12px;
+      line-height: 1.6;
+      display: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .spoiler-content.open {
+      display: block;
+    }
+
+    .spoiler-content pre {
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .spoiler-content code {
+      color: #ce9178;
+    }
+
     .window {
       flex: 1;
       display: flex;
@@ -147,6 +206,31 @@
     <h1 class="project-title">{{PROJECT_NAME}}</h1>
     <p class="project-description">{{PROJECT_DESCRIPTION}}</p>
   </div>
+
+  <div class="spoiler">
+    <div class="spoiler-header" onclick="toggleSpoiler(this)">
+      <span class="spoiler-title">Описание проекта</span>
+      <span class="spoiler-toggle">▼ Показать</span>
+    </div>
+    <div class="spoiler-content">
+      <pre>{{FULL_DESCRIPTION}}</pre>
+    </div>
+  </div>
+
+  <script>
+    function toggleSpoiler(header) {
+      var content = header.nextElementSibling;
+      var toggle = header.querySelector('.spoiler-toggle');
+      if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        toggle.textContent = '▼ Показать';
+      } else {
+        content.classList.add('open');
+        toggle.textContent = '▲ Скрыть';
+      }
+    }
+  </script>
+
   <div class="window">
     <div class="title-bar">
       <div class="title-bar-icon"></div>

@@ -33,6 +33,7 @@ class Project:
     path: Path
     cpp_files: list[str]
     description: str = ""
+    full_description: str = ""
 
 def slugify(name: str) -> str:
     """Преобразует имя проекта в “безопасное” имя для URL
@@ -68,12 +69,15 @@ def find_projects(projects_root: Path) -> list[Project]:
         if not has_entry:
             continue
 
-        # Читаем README.md, если есть
+        # Читаем README.md полностью для спойлера
         description = ""
+        full_description = ""
         readme_path = path / "README.md"
         if readme_path.is_file():
             readme_text = readme_path.read_text(encoding="utf-8")
-            # Берём только первый абзац (до первого пустого блока или заголовка)
+            full_description = readme_text
+
+            # Берём первый абзац для краткого описания в списке
             lines = readme_text.split("\n")
             for line in lines:
                 line = line.strip()
@@ -81,14 +85,14 @@ def find_projects(projects_root: Path) -> list[Project]:
                     description = line
                     break
                 elif line.startswith("# "):
-                    # Пропускаем заголовок, берём следующую строку
                     continue
 
         projects.append(Project(
             slug=slugify(path.name),
             path=path,
             cpp_files=[f.name for f in cpp_files],
-            description=description
+            description=description,
+            full_description=full_description
         ))
 
     return projects
@@ -97,6 +101,7 @@ def render_template(project: Project, template: str) -> str:
     """Подставляет название проекта и описание в HTML-шаблон страницы проекта."""
     result = template.replace("{{PROJECT_NAME}}", project.path.name)
     result = result.replace("{{PROJECT_DESCRIPTION}}", project.description)
+    result = result.replace("{{FULL_DESCRIPTION}}", project.full_description)
     return result
 
 
@@ -107,9 +112,12 @@ def render_index(projects: list[Project], template: str) -> str:
     на `<li>` элементы со ссылками на страницы проектов.
     """
     items = "\n    ".join(
-        f'<li><a href="{p.slug}/index.html">{p.path.name}</a>'
-        + (f'<div class="description">{p.description}</div>' if p.description else '')
-        + f'</li>'
+        f'<li>'
+        f'<div class="project-item">'
+        f'<a href="{p.slug}/index.html" class="project-link">{p.path.name}</a>'
+        f'<button class="info-btn" data-description="{p.full_description.replace("\"", "&quot;").replace("\n", "\\n")}" onclick="showDescription(this)">i</button>'
+        f'</div>'
+        f'</li>'
         for p in projects
     )
     return template.replace("{{PROJECTS}}", items)
