@@ -161,7 +161,7 @@ def main() -> None:
     # Список проектов, найденных для сборки.
     projects : list[Project] = find_projects(projects_root)    
     # Сортировка проектов по slug для стабильного порядка в выводе и `index.html`.
-    projects.sort(key=lambda t: t[0])
+    # projects.sort(key=lambda t: t[0])
 
     if not projects:
         print("error: no projects found to build.", file=sys.stderr)
