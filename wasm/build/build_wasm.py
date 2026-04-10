@@ -32,6 +32,7 @@ class Project:
     slug: str
     path: Path
     cpp_files: list[str]
+    description: str = ""
 
 def slugify(name: str) -> str:
     """Преобразует имя проекта в “безопасное” имя для URL
@@ -67,13 +68,37 @@ def find_projects(projects_root: Path) -> list[Project]:
         if not has_entry:
             continue
 
+        # Читаем README.md, если есть
+        description = ""
+        readme_path = path / "README.md"
+        if readme_path.is_file():
+            readme_text = readme_path.read_text(encoding="utf-8")
+            # Берём только первый абзац (до первого пустого блока или заголовка)
+            lines = readme_text.split("\n")
+            for line in lines:
+                line = line.strip()
+                if line and not line.startswith("#") and not line.startswith("["):
+                    description = line
+                    break
+                elif line.startswith("# "):
+                    # Пропускаем заголовок, берём следующую строку
+                    continue
+
         projects.append(Project(
             slug=slugify(path.name),
             path=path,
-            cpp_files=[f.name for f in cpp_files]
+            cpp_files=[f.name for f in cpp_files],
+            description=description
         ))
 
     return projects
+
+def render_template(project: Project, template: str) -> str:
+    """Подставляет название проекта и описание в HTML-шаблон страницы проекта."""
+    result = template.replace("{{PROJECT_NAME}}", project.path.name)
+    result = result.replace("{{PROJECT_DESCRIPTION}}", project.description)
+    return result
+
 
 def render_index(projects: list[Project], template: str) -> str:
     """Подставляет список проектов в HTML-шаблон главной страницы.
@@ -82,7 +107,9 @@ def render_index(projects: list[Project], template: str) -> str:
     на `<li>` элементы со ссылками на страницы проектов.
     """
     items = "\n    ".join(
-        f'<li><a href="{p.slug}/index.html">{p.slug}</a></li>' 
+        f'<li><a href="{p.slug}/index.html">{p.path.name}</a>'
+        + (f'<div class="description">{p.description}</div>' if p.description else '')
+        + f'</li>'
         for p in projects
     )
     return template.replace("{{PROJECTS}}", items)
@@ -130,6 +157,9 @@ def main() -> None:
         print("error: no projects found to build.", file=sys.stderr)
         sys.exit(1)
 
+    # Читаем шаблон страницы проекта один раз
+    template_content = TEMPLATE_HTML.read_text(encoding="utf-8")
+
     # Итерация по проектам: slug, директория исходников, список `.cpp` файлов.
     for project in projects:
         # Абсолютный путь к директории проекта.
@@ -159,7 +189,11 @@ def main() -> None:
         cmd = ["em++", *em_flags, *sources, "-o", str(out_dir / "main.js")]
         subprocess.run(cmd, check=True, cwd=str(REPO_ROOT))
         
-        shutil.copy(TEMPLATE_HTML, out_dir / "index.html")
+        # Записываем HTML страницу проекта с названием и описанием
+        (out_dir / "index.html").write_text(
+            render_template(project, template_content),
+            encoding="utf-8"
+        )
         print(f"ok: {out_dir}")
 
     INDEX_TEMPLATE_PATH.write_text(
