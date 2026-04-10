@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Метод Ньютона и Простых итераций — WASM</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0c0c0c;
+      color: #cccccc;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-header {
+      background: linear-gradient(to bottom, #1e3a5f, #0c0c0c);
+      padding: 12px 16px;
+      border-bottom: 1px solid #3f3f3f;
+    }
+
+    .project-title {
+      color: #569cd6;
+      font-size: 16px;
+      margin: 0 0 6px 0;
+    }
+
+    .project-description {
+      color: #6a9955;
+      font-size: 12px;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .spoiler {
+      margin: 10px 16px;
+      border: 1px solid #3f3f3f;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .spoiler-header {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .spoiler-header:hover {
+      background: linear-gradient(to bottom, #3d3d3d, #2a2a2a);
+    }
+
+    .spoiler-title {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .spoiler-toggle {
+      color: #569cd6;
+      font-size: 12px;
+    }
+
+    .spoiler-content {
+      padding: 12px;
+      background-color: #0c0c0c;
+      color: #888;
+      font-size: 12px;
+      line-height: 1.6;
+      display: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .spoiler-content.open {
+      display: block;
+    }
+
+    .spoiler-content pre {
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .spoiler-content code {
+      color: #ce9178;
+    }
+
+    .window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #3f3f3f;
+      margin: 10px;
+      background-color: #0c0c0c;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .title-bar {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #3f3f3f;
+    }
+
+    .title-bar-icon {
+      width: 16px;
+      height: 16px;
+      background-color: #3f3f3f;
+      border-radius: 2px;
+    }
+
+    .title-bar-text {
+      color: #cccccc;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .back-btn {
+      background-color: #3f3f3f;
+      color: #cccccc;
+      border: 1px solid #555;
+      padding: 4px 12px;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .back-btn:hover {
+      background-color: #555;
+    }
+
+    .back-btn:active {
+      background-color: #264f78;
+    }
+
+    .content {
+      flex: 1;
+      padding: 8px 10px;
+      overflow-y: auto;
+    }
+
+    #output {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: #cccccc;
+      line-height: 1.4;
+    }
+
+    .prompt {
+      color: #569cd6;
+    }
+
+    .error {
+      color: #f44747;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background-color: #cccccc;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 16px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f3f;
+      border: 3px solid #1a1a1a;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="project-header">
+    <h1 class="project-title">Метод Ньютона и Простых итераций</h1>
+    <p class="project-description">﻿<!-- лаба 5 --></p>
+  </div>
+
+  <div class="spoiler">
+    <div class="spoiler-header" onclick="toggleSpoiler(this)">
+      <span class="spoiler-title">Описание проекта</span>
+      <span class="spoiler-toggle">▼ Показать</span>
+    </div>
+    <div class="spoiler-content">
+      <pre>﻿<!-- лаба 5 -->
+# Метод Ньютона (касательных) и Метод простой итерации
+
+В программе реализованы два численных метода решения нелинейного уравнения:
+
+$$
+f(x) = \sin(x^2) - 6x + 1 = 0
+$$
+
+## Описание и алгоритм
+
+### 1. Метод Ньютона (касательных)
+
+Метод основан на использовании касательной к графику функции в текущей точке приближения.
+
+Итерационная формула:
+$$
+x_{k+1} = x_k - \frac{f(x_k)}{f'(x_k)}
+$$
+
+В данной реализации производная вычисляется численно методом конечных разностей:
+$$
+f'(x) \approx \frac{f(x + h) - f(x)}{h}
+$$
+
+Алгоритм:
+
+1. Задать начальное приближение $x_0$
+2. Вычислить производную
+3. Найти новое значение $x_{k+1}$
+4. Повторять, пока:
+   $$
+   |x_{k+1} - x_k| > \varepsilon
+   $$
+
+Особенности:
+
+- Быстрая сходимость (квадратичная)
+- Требует вычисления производной
+- Чувствителен к начальному приближению
+
+---
+
+### 2. Метод простой итерации
+
+Исходное уравнение приводится к виду:
+$$
+x = \varphi(x)
+$$
+
+В программе используется преобразование:
+$$
+\varphi(x) = \frac{\sin(x^2) + 1}{6}
+$$
+
+Итерационная формула:
+$$
+x_{k+1} = \varphi(x_k)
+$$
+
+Алгоритм:
+
+1. Задать начальное приближение $x_0$
+2. Вычислить $x_{k+1} = \varphi(x_k)$
+3. Повторять, пока:
+   $$
+   |x_{k+1} - x_k| > \varepsilon
+   $$
+
+Особенности:
+
+- Простота реализации
+- Сходимость зависит от выбора $\varphi(x)$
+- Обычно медленнее метода Ньютона
+
+---
+
+## Использование
+
+1. Задайте параметры в коде:
+   - начальное приближение `x0`
+   - точность `eps`
+
+    ```cpp
+    x0 = 0.1;
+    eps = 0.000001;
+    ```
+
+2. Скомпилируйте и запустите программу.
+3. Программа выведет:
+    результат метода Ньютона
+    результат метода простой итерации
+
+## Примечания
+
+- Для корректной работы метода Ньютона рекомендуется пересчитывать производную на каждой итерации
+- Условие остановки должно быть:
+    ```cpp
+    while (abs(x - x0) > eps);
+    ```
+- Метод простой итерации сходится только при выполнении условия сжатия:
+  $∣φ′(x)∣<1$</pre>
+    </div>
+  </div>
+
+  <script>
+    function toggleSpoiler(header) {
+      var content = header.nextElementSibling;
+      var toggle = header.querySelector('.spoiler-toggle');
+      if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        toggle.textContent = '▼ Показать';
+      } else {
+        content.classList.add('open');
+        toggle.textContent = '▲ Скрыть';
+      }
+    }
+  </script>
+
+  <div class="window">
+    <div class="title-bar">
+      <div class="title-bar-icon"></div>
+      <span class="title-bar-text">C:\WASM Console</span>
+      <button class="back-btn" onclick="window.location.href='../index.html'">← Назад</button>
+    </div>
+    <div class="content">
+      <pre id="output"><span class="prompt">C:\&gt;</span> <span class="cursor"></span></pre>
+    </div>
+  </div>
+
+  <script>
+    var outputEl = document.getElementById("output");
+    var cursorEl = outputEl.querySelector(".cursor");
+
+    function appendText(text, isError = false) {
+      var cursor = outputEl.querySelector(".cursor");
+
+      if (cursor) {
+        outputEl.removeChild(cursor);
+      }
+
+      var span = document.createElement("span");
+      span.textContent = text + "\n";
+      span.className = isError ? "error" : "";
+
+      var newCursor = document.createElement("span");
+      newCursor.className = "cursor";
+
+      outputEl.appendChild(span);
+      outputEl.appendChild(newCursor);
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+
+    var Module = {
+      print: (text) => {
+        appendText(text, false);
+      },
+      printErr: (text) => {
+        appendText(text, true);
+      }
+    };
+  </script>
+
+  <script src="main.js"></script>
+</body>
+</html>

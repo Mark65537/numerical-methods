@@ -1,0 +1,307 @@
+#include <cstdlib>
+#include <iostream>
+#include "fstream"
+#include "windows.h"
+#include <math.h>
+#include <iomanip>
+
+using namespace std;
+
+float c, s;
+const int n = 5;
+const int m = n + 1;
+int stroka_1 = 0,
+stroka_A = 1,
+endd = n,
+k;
+float x[m],
+r[m],
+mtrx[n][m],
+mtrx2[n][m];
+
+// Считывает расширенную матрицу из файла и печатает её на экран.
+void zapis()
+{
+	ifstream fin("mtx.txt");
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < m; j++)
+			fin >> mtrx[i][j];
+
+	for (int i = 0; i < n; i++)
+	{
+		cout << endl;
+		for (int j = 0; j < m; j++)
+			cout << " " << mtrx[i][j];
+	}
+	cout << endl;
+	fin.close();
+}
+
+// Вычисляет коэффициент поворота (cos/sin) для метода вращений.
+float cs(float m1, float m2, float m3)
+{
+	return (m1 / sqrt(pow(m2, 2) + pow(m3, 2)));
+}
+
+
+//void vivod(int n,int m,float mtrx2[10][10])
+//{
+//for (int i = 1; i <n; i++)
+//	{
+//		cout << endl;
+//		for (int j = 1; j <m; j++)
+//			cout << " " << mtrx2[i][j];
+//	}
+//}
+
+// Выполняет одно вращение двух строк и обновляет рабочую матрицу.
+void reshenie(int stroka_1, int stroka_A)
+{
+	c = cs(mtrx2[stroka_1][stroka_1], mtrx2[stroka_1][stroka_1], mtrx2[stroka_A][stroka_1]);
+	s = cs(mtrx2[stroka_A][stroka_1], mtrx2[stroka_1][stroka_1], mtrx2[stroka_A][stroka_1]);
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < m; j++)
+		{
+			if (i == stroka_1)
+			{
+				mtrx2[stroka_1][j] = c * mtrx[stroka_1][j] + s * mtrx[stroka_A][j];
+			}
+			else if (i == stroka_A)
+			{
+				mtrx2[stroka_A][j] = c * mtrx[stroka_A][j] - s * mtrx[stroka_1][j];
+			}
+			else
+				break;
+		}
+	}
+	std::memcpy(mtrx, mtrx2, sizeof(float) * (n * m));
+}
+
+int main()
+{
+#if defined(_WIN32) && !defined(__EMSCRIPTEN__)
+	SetConsoleOutputCP(65001); // UTF-8
+	SetConsoleCP(65001);
+#endif
+	for (int i = 0; i < n; i++)
+	{
+		x[i] = 0;
+	}
+	x[n] = 1;
+	cout << "до:\n";
+	zapis();
+	std::memcpy(mtrx2, mtrx, sizeof(float) * (n * m));
+
+	// ПРЕОБРАЗОВАНИЕ МАТРИЦЫ
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = i; j <= n; j++)
+			reshenie(i, j + 1);
+	}
+
+	//ВЫВОД МАТРИЦЫ
+	cout << "последнии с и s:\n";
+	cout << c << " " << s << endl;
+	cout << "\nпосле:\n";
+	for (int i = 0; i < n; i++)
+	{
+		cout << endl;
+		for (int j = 0; j < m; j++)
+			cout << " " << setiosflags(ios::fixed) << setprecision(4) << mtrx2[i][j];
+	}
+	//ВЫЧИСЛЕНИЯ ОТВЕТА
+	cout << "\nroots:\n";
+	for (int i = n - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < m; j++)
+		{
+			if (mtrx2[i][j] == mtrx2[i][i])
+				continue;
+			if (j == (m - 1)) k = -1;
+			else  k = 1;
+			x[i] += ((mtrx2[i][j] * x[j]) * k) / (-mtrx2[i][i]);
+
+		}
+		cout << setiosflags(ios::fixed) << setprecision(4) << x[i] << endl;
+	}
+	//ВЫЧИСЛЕНИЯ вектора невязки
+	cout << "\nвектора невязки:\n";
+	for (int i = n - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < m; j++)
+		{
+			if (j == (m - 1)) k = -1;
+			else  k = 1;
+			r[i] += ((mtrx2[i][j] * x[j]) * k);
+
+		}
+		cout << setiosflags(ios::fixed) << setprecision(12) << r[i] << endl;
+	}
+	//x[2]=mtrx2[2][3]/mtrx2[2][2];
+	//x[1]=(mtrx2[1][3]-mtrx2[1][2]*x[2])/mtrx2[1][1];
+ //   x[0]=(mtrx2[0][1]*x[1]+mtrx2[0][2]*x[2]-mtrx2[0][3])/(-mtrx2[0][0]);
+	cout << endl;
+	system("pause");
+	return 0;
+}
+
+0.521 -0.296 0 0.04 -0.21 0.24886
+-0.296 0.7 0.24 -0.32 0.06 -0.7012
+0     0.24 -0.35 0.07 0.21 0.1347
+0.04 -0.32 0.07 0.49 -0.03 0.4659
+-0.21 0.06 0.21 -0.03 0.63 -0.1749
+0.14 0.24 -0.84 1.11
+1.07 -0.83 0.56 0.48
+0.64 0.43 -0.38 -0.83﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{1438b586-3d31-4698-bf9f-4f517a7b83c5}</ProjectGuid>
+    <RootNamespace>методвращения</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Файлы заголовков">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

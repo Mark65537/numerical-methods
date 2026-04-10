@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Метод Симпсона и Трапеций — WASM</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0c0c0c;
+      color: #cccccc;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-header {
+      background: linear-gradient(to bottom, #1e3a5f, #0c0c0c);
+      padding: 12px 16px;
+      border-bottom: 1px solid #3f3f3f;
+    }
+
+    .project-title {
+      color: #569cd6;
+      font-size: 16px;
+      margin: 0 0 6px 0;
+    }
+
+    .project-description {
+      color: #6a9955;
+      font-size: 12px;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .spoiler {
+      margin: 10px 16px;
+      border: 1px solid #3f3f3f;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .spoiler-header {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .spoiler-header:hover {
+      background: linear-gradient(to bottom, #3d3d3d, #2a2a2a);
+    }
+
+    .spoiler-title {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .spoiler-toggle {
+      color: #569cd6;
+      font-size: 12px;
+    }
+
+    .spoiler-content {
+      padding: 12px;
+      background-color: #0c0c0c;
+      color: #888;
+      font-size: 12px;
+      line-height: 1.6;
+      display: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .spoiler-content.open {
+      display: block;
+    }
+
+    .spoiler-content pre {
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .spoiler-content code {
+      color: #ce9178;
+    }
+
+    .window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #3f3f3f;
+      margin: 10px;
+      background-color: #0c0c0c;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .title-bar {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #3f3f3f;
+    }
+
+    .title-bar-icon {
+      width: 16px;
+      height: 16px;
+      background-color: #3f3f3f;
+      border-radius: 2px;
+    }
+
+    .title-bar-text {
+      color: #cccccc;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .back-btn {
+      background-color: #3f3f3f;
+      color: #cccccc;
+      border: 1px solid #555;
+      padding: 4px 12px;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .back-btn:hover {
+      background-color: #555;
+    }
+
+    .back-btn:active {
+      background-color: #264f78;
+    }
+
+    .content {
+      flex: 1;
+      padding: 8px 10px;
+      overflow-y: auto;
+    }
+
+    #output {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: #cccccc;
+      line-height: 1.4;
+    }
+
+    .prompt {
+      color: #569cd6;
+    }
+
+    .error {
+      color: #f44747;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background-color: #cccccc;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 16px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f3f;
+      border: 3px solid #1a1a1a;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="project-header">
+    <h1 class="project-title">Метод Симпсона и Трапеций</h1>
+    <p class="project-description">﻿<!-- 7 laba 1 --></p>
+  </div>
+
+  <div class="spoiler">
+    <div class="spoiler-header" onclick="toggleSpoiler(this)">
+      <span class="spoiler-title">Описание проекта</span>
+      <span class="spoiler-toggle">▼ Показать</span>
+    </div>
+    <div class="spoiler-content">
+      <pre>﻿<!-- 7 laba 1 -->
+
+# Метод Симпсона и Трапеций
+
+В этой программе реализованы численные методы интегрирования (приближённого вычисления определённого интеграла).
+
+Интегрируется функция:
+
+$$f(x) = xe^{-x}$$
+
+на отрезке $[a,b]=[−1,π]$
+
+## Алгоритм
+
+### Общая логика программы
+
+Оба метода работают по одной схеме:
+
+1. Берётся начальное разбиение
+2. Считается интеграл
+3. Уменьшается шаг (увеличивается число разбиений)
+4. Сравниваются два соседних результата:
+    $$|I_{new} - I_{old}|$$
+5. Если ошибка меньше E = 0.00001 → остановка
+
+### 1. Метод Симпсона
+
+Метод Симпсона (парабол) аппроксимирует функцию на каждом интервале $[x_i, x_{i+1}]$ квадратичной параболой. Для этого используются три точки: концы интервала и его середина.
+
+**Формула для одного интервала:**
+$$I_i = \frac{h}{6}\left(f(x_i) + 4f\left(\frac{x_i+x_{i+1}}{2}\right) + f(x_{i+1})\right)$$
+
+где $h = \frac{b-a}{n}$ — шаг разбиения.
+
+**Общая формула при чётном числе разбиений $n = 2m$:**
+$$I \approx \frac{h}{3}\left[f(x_0) + f(x_{2m}) + 4\sum_{k=1}^{m} f(x_{2k-1}) + 2\sum_{k=1}^{m-1} f(x_{2k})\right]$$
+
+Метод имеет четвёртый порядок точности (погрешность $O(h^4)$).
+
+### 2. Метод Трапеций
+
+Метод трапеций аппроксимирует функцию на каждом интервале прямой линией, соединяющей концы отрезка. Площадь под графиком представляется как сумма трапеций.
+
+**Формула:**
+$$I \approx h\left[\frac{f(x_0) + f(x_n)}{2} + \sum_{i=1}^{n-1} f(x_i)\right]$$
+
+Метод имеет второй порядок точности (погрешность $O(h^2)$).
+
+### Сравнение методов
+
+| Метод | Порядок точности | Точность |
+|-------|------------------|----------|
+| Трапеций | $O(h^2)$ | Ниже |
+| Симпсон | $O(h^4)$ | Выше |
+
+Метод Симпсона обычно даёт более точный результат при том же числе разбиений.
+
+## Использование
+
+Программа считает все сама и выводит ответ в консоль
+
+## Лицензия
+
+MIT
+</pre>
+    </div>
+  </div>
+
+  <script>
+    function toggleSpoiler(header) {
+      var content = header.nextElementSibling;
+      var toggle = header.querySelector('.spoiler-toggle');
+      if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        toggle.textContent = '▼ Показать';
+      } else {
+        content.classList.add('open');
+        toggle.textContent = '▲ Скрыть';
+      }
+    }
+  </script>
+
+  <div class="window">
+    <div class="title-bar">
+      <div class="title-bar-icon"></div>
+      <span class="title-bar-text">C:\WASM Console</span>
+      <button class="back-btn" onclick="window.location.href='../index.html'">← Назад</button>
+    </div>
+    <div class="content">
+      <pre id="output"><span class="prompt">C:\&gt;</span> <span class="cursor"></span></pre>
+    </div>
+  </div>
+
+  <script>
+    var outputEl = document.getElementById("output");
+    var cursorEl = outputEl.querySelector(".cursor");
+
+    function appendText(text, isError = false) {
+      var cursor = outputEl.querySelector(".cursor");
+
+      if (cursor) {
+        outputEl.removeChild(cursor);
+      }
+
+      var span = document.createElement("span");
+      span.textContent = text + "\n";
+      span.className = isError ? "error" : "";
+
+      var newCursor = document.createElement("span");
+      newCursor.className = "cursor";
+
+      outputEl.appendChild(span);
+      outputEl.appendChild(newCursor);
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+
+    var Module = {
+      print: (text) => {
+        appendText(text, false);
+      },
+      printErr: (text) => {
+        appendText(text, true);
+      }
+    };
+  </script>
+
+  <script src="main.js"></script>
+</body>
+</html>

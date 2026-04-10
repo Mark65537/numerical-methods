@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Численные методы — WebAssembly</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0c0c0c;
+      color: #cccccc;
+      font-family: Consolas, "Lucida Console", monospace;
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 10px;
+    }
+
+    .window {
+      background-color: #0c0c0c;
+      border: 1px solid #3f3f3f;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .title-bar {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #3f3f3f;
+    }
+
+    .title-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .title-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.3);
+    }
+
+    .title-btn.close { background-color: #f44747; }
+    .title-btn.minimize { background-color: #ffb900; }
+    .title-btn.maximize { background-color: #69c746; }
+
+    .title-text {
+      color: #cccccc;
+      font-size: 12px;
+      flex: 1;
+      text-align: center;
+      margin-right: 50px;
+    }
+
+    .menu-bar span {
+      margin-right: 15px;
+      color: #888;
+    }
+
+    .menu-bar span:first-letter {
+      text-decoration: underline;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    h1 {
+      color: #569cd6;
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      font-weight: normal;
+      border-bottom: 1px solid #3f3f3f;
+      padding-bottom: 10px;
+    }
+
+    p {
+      color: #888;
+      margin: 0 0 20px 0;
+      line-height: 1.6;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    a {
+      color: #569cd6;
+      text-decoration: none;
+      display: block;
+    }
+
+    a:hover {
+      color: #9cdcfe;
+      text-decoration: underline;
+    }
+
+    a::before {
+      content: "▸ ";
+      color: #6a9955;
+    }
+
+    .description {
+      color: #6a9955;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: #264f78;
+      color: #9cdcfe;
+      padding: 2px 6px;
+      font-size: 11px;
+      margin-left: 10px;
+      border-radius: 2px;
+    }
+
+    .project-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .project-link {
+      flex: 1;
+    }
+
+    .info-btn {
+      background-color: #264f78;
+      color: #9cdcfe;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+
+    .info-btn:hover {
+      background-color: #3a6ea5;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #0c0c0c;
+      border: 1px solid #3f3f3f;
+      border-radius: 8px;
+      max-width: 600px;
+      max-height: 80vh;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-header {
+      background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+      padding: 12px 16px;
+      border-bottom: 1px solid #3f3f3f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .modal-title {
+      color: #569cd6;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: #f44747;
+    }
+
+    .modal-content {
+      padding: 16px;
+      overflow-y: auto;
+      color: #888;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .modal-content pre {
+      background: #1a1a1a;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .modal-content code {
+      color: #ce9178;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 16px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f3f;
+      border: 3px solid #1a1a1a;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-buttons">
+          <div class="title-btn close"></div>
+          <div class="title-btn minimize"></div>
+          <div class="title-btn maximize"></div>
+        </div>
+        <span class="title-text">Численные методы — WebAssembly</span>
+      </div>
+      <div class="content">
+        <h1>Численные методы (WASM)</h1>
+        <p>Сборки Emscripten для запуска в браузере. Для ввода с клавиатуры используйте поля ввода в странице (stdin).</p>
+        <ul>
+          <li><div class="project-item"><a href="метод-ньютона-и-простых-итераций/index.html" class="project-link">Метод Ньютона и Простых итераций</a><button class="info-btn" data-description="﻿<!-- лаба 5 -->\n# Метод Ньютона (касательных) и Метод простой итерации\n\nВ программе реализованы два численных метода решения нелинейного уравнения:\n\n$$\nf(x) = \sin(x^2) - 6x + 1 = 0\n$$\n\n## Описание и алгоритм\n\n### 1. Метод Ньютона (касательных)\n\nМетод основан на использовании касательной к графику функции в текущей точке приближения.\n\nИтерационная формула:\n$$\nx_{k+1} = x_k - \frac{f(x_k)}{f'(x_k)}\n$$\n\nВ данной реализации производная вычисляется численно методом конечных разностей:\n$$\nf'(x) \approx \frac{f(x + h) - f(x)}{h}\n$$\n\nАлгоритм:\n\n1. Задать начальное приближение $x_0$\n2. Вычислить производную\n3. Найти новое значение $x_{k+1}$\n4. Повторять, пока:\n   $$\n   |x_{k+1} - x_k| > \varepsilon\n   $$\n\nОсобенности:\n\n- Быстрая сходимость (квадратичная)\n- Требует вычисления производной\n- Чувствителен к начальному приближению\n\n---\n\n### 2. Метод простой итерации\n\nИсходное уравнение приводится к виду:\n$$\nx = \varphi(x)\n$$\n\nВ программе используется преобразование:\n$$\n\varphi(x) = \frac{\sin(x^2) + 1}{6}\n$$\n\nИтерационная формула:\n$$\nx_{k+1} = \varphi(x_k)\n$$\n\nАлгоритм:\n\n1. Задать начальное приближение $x_0$\n2. Вычислить $x_{k+1} = \varphi(x_k)$\n3. Повторять, пока:\n   $$\n   |x_{k+1} - x_k| > \varepsilon\n   $$\n\nОсобенности:\n\n- Простота реализации\n- Сходимость зависит от выбора $\varphi(x)$\n- Обычно медленнее метода Ньютона\n\n---\n\n## Использование\n\n1. Задайте параметры в коде:\n   - начальное приближение `x0`\n   - точность `eps`\n\n    ```cpp\n    x0 = 0.1;\n    eps = 0.000001;\n    ```\n\n2. Скомпилируйте и запустите программу.\n3. Программа выведет:\n    результат метода Ньютона\n    результат метода простой итерации\n\n## Примечания\n\n- Для корректной работы метода Ньютона рекомендуется пересчитывать производную на каждой итерации\n- Условие остановки должно быть:\n    ```cpp\n    while (abs(x - x0) > eps);\n    ```\n- Метод простой итерации сходится только при выполнении условия сжатия:\n  $∣φ′(x)∣<1$" onclick="showDescription(this)">i</button></div></li>
+    <li><div class="project-item"><a href="норма-матрицы1-норма/index.html" class="project-link">Норма матрицы(1-норма)</a><button class="info-btn" data-description="# Норма матрицы (1-норма)\n\nДанная программа считывает матрицу размером `N × M` и вычисляет **Столбцовая норма (1-норма)** — максимальную сумму модулей элементов по столбцам.\n\n$$\n\|A\|_1 = \max_j \sum_i |a_{ij}|\n$$\n\n## Алгоритм\n\n1. Считать размеры матрицы `N` и `M`.\n2. Считать элементы матрицы $A[i][j]$.\n3. Для каждого столбца `j`:\n   - вычислить сумму $S_j = \sum_{i=1}^{N} \lvert A[i][j] \rvert$\n4. Найти максимальную из сумм $S_j$.\n5. Вывести найденное значение как $\|A\|_1$.\n\n## Использование\n\n1. Введите длину матрицы (N)\n2. Введите ширину матрицы (M).\n3. Введите элементы матрицы.ы\n\n## Пример\n\nДля матрицы\n\n$$\n\begin{bmatrix}\n1 & -2 \\\n3 & 4\n\end{bmatrix}\n$$\n\nсуммы по столбцам:\n\n- $|1| + |3| = 4$\n- $|-2| + |4| = 6$\n\nСледовательно, $\|A\|_1 = 6$.\n\n## ⚠️ Ограничения текущей реализации\n\n- ❌ Массив фиксированного размера `20×20`  \n- ❌ Начальное значение `max = 0` даёт неверный результат при отрицательных числах" onclick="showDescription(this)">i</button></div></li>
+    <li><div class="project-item"><a href="метод-симпсона-и-трапеций/index.html" class="project-link">Метод Симпсона и Трапеций</a><button class="info-btn" data-description="﻿<!-- 7 laba 1 -->\n\n# Метод Симпсона и Трапеций\n\nВ этой программе реализованы численные методы интегрирования (приближённого вычисления определённого интеграла).\n\nИнтегрируется функция:\n\n$$f(x) = xe^{-x}$$\n\nна отрезке $[a,b]=[−1,π]$\n\n## Алгоритм\n\n### Общая логика программы\n\nОба метода работают по одной схеме:\n\n1. Берётся начальное разбиение\n2. Считается интеграл\n3. Уменьшается шаг (увеличивается число разбиений)\n4. Сравниваются два соседних результата:\n    $$|I_{new} - I_{old}|$$\n5. Если ошибка меньше E = 0.00001 → остановка\n\n### 1. Метод Симпсона\n\nМетод Симпсона (парабол) аппроксимирует функцию на каждом интервале $[x_i, x_{i+1}]$ квадратичной параболой. Для этого используются три точки: концы интервала и его середина.\n\n**Формула для одного интервала:**\n$$I_i = \frac{h}{6}\left(f(x_i) + 4f\left(\frac{x_i+x_{i+1}}{2}\right) + f(x_{i+1})\right)$$\n\nгде $h = \frac{b-a}{n}$ — шаг разбиения.\n\n**Общая формула при чётном числе разбиений $n = 2m$:**\n$$I \approx \frac{h}{3}\left[f(x_0) + f(x_{2m}) + 4\sum_{k=1}^{m} f(x_{2k-1}) + 2\sum_{k=1}^{m-1} f(x_{2k})\right]$$\n\nМетод имеет четвёртый порядок точности (погрешность $O(h^4)$).\n\n### 2. Метод Трапеций\n\nМетод трапеций аппроксимирует функцию на каждом интервале прямой линией, соединяющей концы отрезка. Площадь под графиком представляется как сумма трапеций.\n\n**Формула:**\n$$I \approx h\left[\frac{f(x_0) + f(x_n)}{2} + \sum_{i=1}^{n-1} f(x_i)\right]$$\n\nМетод имеет второй порядок точности (погрешность $O(h^2)$).\n\n### Сравнение методов\n\n| Метод | Порядок точности | Точность |\n|-------|------------------|----------|\n| Трапеций | $O(h^2)$ | Ниже |\n| Симпсон | $O(h^4)$ | Выше |\n\nМетод Симпсона обычно даёт более точный результат при том же числе разбиений.\n\n## Использование\n\nПрограмма считает все сама и выводит ответ в консоль\n\n## Лицензия\n\nMIT\n" onclick="showDescription(this)">i</button></div></li>
+    <li><div class="project-item"><a href="interpolation-2/index.html" class="project-link">Interpolation 2</a><button class="info-btn" data-description="# Interpolation 2\n\nПрограмма выполняет численную интерполяцию двух заданных функций:\n\n- полиномом Лагранжа\n- кубическим сплайном (кусочно-кубическая функция)\n\nИсходный код находится в папке `Interpolation 2/Interpolation 2/` (входная точка: `Source.cpp`).\nВходные данные задаются прямо в коде (интервалы, формулы функций, число узлов `N` и шаг сетки `U=1000`).\nВыходные данные программы — таблицы значений в файлах `*.txt`, которые можно открыть в Excel.\n\n## Алгоритм\n\n1. Для задания `q=1` и `q=2` выбираются:\n   1) функция `f(x)`\n   2) отрезок интерполяции `[a, b]`\n   3) число узлов интерполяции `N` (равномерная сетка)\n   4) сетка для оценки интерполяции: `U=1000` точек между `a` и `b`.\n2. Узлы интерполяции строятся так:\n   - `x_i = a + i*(b-a)/(N-1)`\n   - `y_i = f(x_i)`\n3. Полином Лагранжа:\n   - для каждой точки `t` вычисляется\n     `P(t) = sum_{i=0..N-1} y_i * prod_{j!=i} (t - x_j)/(x_i - x_j)`\n4. Кубический сплайн:\n   - коэффициенты сплайна строятся по узлам `x_i, y_i`\n   - значения коэффициентов находятся решением СЛАУ для трёхдиагональной матрицы методом прогонки (прямой/обратный ход)\n   - затем сплайн вычисляется на нужном отрезке (сегмент выбирается бинарным поиском) по формуле кусочного кубического многочлена\n5. Для каждой точки оценочной сетки программа записывает `x`, точное значение `f(x)` и значение интерполяции в `*.txt`.\n\n## Использование\n\n1. Программа автоматически выполнит оба задания (`q=1` и `q=2`) и выведет в консоль несколько промежуточных значений.\n2. После завершения появятся/обновятся файлы `*.txt` в рабочей директории (их можно построить в Excel по колонкам `x`, `f(x)`, `interp(x)`).\n\n## Выходные данные\n\nПрограмма создаёт (перезаписывает) табличные файлы `*.txt`.\n\nФормат каждой строки: табуляция-разделённые колонки:\n- `x` — точка на сетке\n- `f(x)` — значение исходной функции\n- `interp(x)` — значение интерполяции в точке `x`\n\nСписок файлов, которые генерируются из кода:\n\n- `Lagrang_5.txt` — полином Лагранжа, `f1(x)`, `N=5`, `[a,b]=[-1,1]`\n- `Lagrang_20.txt` — полином Лагранжа, `f1(x)`, `N=20`, `[a,b]=[-1,1]`\n- `Lagrang2_20.txt` — полином Лагранжа, `f2(x)`, `N=20`, `[a,b]=[0,PI]`\n- `Spline_5.txt` — кубический сплайн, `f1(x)`, `N=5`, `[a,b]=[-1,1]`\n- `Spline_20.txt` — кубический сплайн, `f1(x)`, `N=20`, `[a,b]=[-1,1]`\n- `Spline2_20.txt` — кубический сплайн, `f2(x)`, `N=20`, `[a,b]=[0,PI]`\n\nИспользуемые функции в коде:\n\n- `f1(x) = 1 / (1 + 25*x^2)`\n- `f2(x) = exp(sin(x)^2) * sin(3*x)`\n\n## Лицензия\n\nMIT\n" onclick="showDescription(this)">i</button></div></li>
+    <li><div class="project-item"><a href="метод-вращения/index.html" class="project-link">метод вращения</a><button class="info-btn" data-description="# Метод вращения (Givens) для СЛАУ\n\nНебольшой учебный проект на C++, который решает систему линейных алгебраических уравнений методом вращений.\n\n## Что делает программа\n\n- считывает расширенную матрицу из файла `mtx.txt`;\n- выполняет преобразование матрицы методом вращений;\n- выводит полученные корни (`roots`);\n- считает и печатает вектор невязки.\n\nВ коде используется фиксированная размерность:\n\n- `n = 5` (число уравнений),\n- `m = n + 1` (расширенная матрица).\n\n## Формат `mtx.txt`\n\nФайл должен содержать `n` строк по `m` чисел в каждой строке.\n\nПример для текущей версии программы:\n\n```txt\na11 a12 a13 a14 a15 b1\na21 a22 a23 a24 a25 b2\na31 a32 a33 a34 a35 b3\na41 a42 a43 a44 a45 b4\na51 a52 a53 a54 a55 b5\n```\n\n## Примечания\n\n- Проект использует `windows.h` и кодировку консоли CP1251.\n- Если меняете размер системы, обновите константу `n` в `Main.cpp` и входной файл `mtx.txt`.\n" onclick="showDescription(this)">i</button></div></li>
+    <li><div class="project-item"><a href="матрица-гилберта-и-вращение/index.html" class="project-link">матрица Гилберта и вращение</a><button class="info-btn" data-description="<!-- 2 laba 2 лабораторная -->\n# матрица Гилберта и вращение\n\nКонсольная программа на C++, реализующая численные методы для работы с **матрицей Гилберта**:\n\n- построение матрицы\n- вычисление обратной матрицы\n- оценка нормы\n- вычисление числа обусловленности\n\n## Что делает программа\n\nПрограмма строит **матрицу Гилберта** размера `k × k`:\n\n$$\nH_{ij} = \frac{1}{i + j + 1}, \quad i,j = 0..k-1\n$$\n\nЗатем вычисляет:\n\n- **обратную матрицу** $H^{-1}$;\n- **норму** $\|H\|$ и $\|H^{-1}\|$ (используется оценка по строкам: берётся максимум по строкам от суммы элементов строки);\n- **число обусловленности** $q = \|H\|\cdot\|H^{-1}\|$.\n\n## Используемые методы\n\nРешение СЛАУ выполняется с помощью метода вращений (Givens rotations), который:\n\n- приводит матрицу к верхнетреугольному виду\n- устойчив к численным ошибкам\n\n## Норма матрицы\n\nИспользуется оценка нормы по строкам:\n\n$$\n||A|| = \max_i \left| \sum_{j} A[i][j] \right|\n$$\n\n## Функциональность\n\n- Генерация матрицы Гилберта\n- Вывод матрицы в консоль\n- Вычисление нормы матрицы\n- Построение обратной матрицы\n- Проверка (A × A⁻¹ ≈ I)\n- Вычисление числа обусловленности\n\n## Структура проекта\n\n- `Main.cpp`: генерация матрицы Гилберта, печать, вычисление нормы, сборка обратной матрицы по столбцам, расчёт \(q\).\n- `Вращение.h`: реализация вращений Гивенса (`alg`) + обратная подстановка (`alg_2`).\n\n## Важно\n\n- Матрица Гилберта **плохо обусловлена**, особенно при увеличении размера `k`\n- При больших `k` возможны значительные ошибки округления\n- Используется динамическое выделение памяти (`new`), освобождение памяти не реализовано\n" onclick="showDescription(this)">i</button></div></li>
+    <li><div class="project-item"><a href="нормализация-данных/index.html" class="project-link">Нормализация данных</a><button class="info-btn" data-description="# Нормализация данных\n\n[![C++](https://img.shields.io/badge/C++-17-blue.svg)](https://isocpp.org/)\n[![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2015+-green.svg)](https://visualstudio.microsoft.com/)\n[![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows/)\n\nУчебный проект по численным методам: генерация матрицы случайных чисел и ее нормализация по максимальному элементу.\n\n## Описание и алгоритм\n\nПрограмма выполняет следующие шаги:\n\n1. Запрашивает размер матрицы `M x N`;\n2. Генерирует матрицу случайными целыми числами в диапазоне от `10` до `99`;\n3. Находит максимальный элемент `maxVal = max(matrix)` во всей матрице.\n4. Нормализует матрицу, деля каждый элемент `x` на `maxVal`: `x = x / maxVal`.\n5. Выводит матрицу:\n    * до нормализации (**Before**)\n    * после нормализации (**After**) с точностью до двух знаков после запятой.\n\n## Использование\n\n1. Запустите скомпилированный исполняемый файл\n2. Введите размер матрицы `M x N`.\n3. Программа выведет:\n    - Сгенерированную матрицу (Before)\n    - Нормализированную матрицу (After)\n\n## Пример работы\n\nВвод:\n\n```text\nEnter number of rows (M) and columns (N): 2 3\n```\n\nВывод (пример):\n\n```text\nBefore:\n12.00 95.00 44.00\n80.00 21.00 63.00\n\nAfter (normalized):\n0.13 1.00 0.46\n0.84 0.22 0.66\n```\n\nПримечание: значения матрицы случайные, поэтому результат при каждом запуске отличается.\n\n## Лицензия\n\nMIT" onclick="showDescription(this)">i</button></div></li>
+    <li><div class="project-item"><a href="обратная-матрица/index.html" class="project-link">обратная матрица</a><button class="info-btn" data-description="# Обратная матрица\n\n[![C++](https://img.shields.io/badge/C++-17-blue.svg)](https://isocpp.org/)\n[![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2015+-green.svg)](https://visualstudio.microsoft.com/)\n[![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows/)\n\nПрограмма для вычисления обратной матрицы методом алгебраических дополнений.\n\n## Описание\n\nПрограмма генерирует случайную квадратную матрицу заданного размера и вычисляет её обратную матрицу.\n\n### Возможности\n\n- Генерация случайной матрицы n×n\n- Вычисление определителя матрицы\n- Вычисление обратной матрицы (если определитель ≠0)\n- Вывод исходной и обратной матриц\n\n### Алгоритм\n\nОбратная матрица вычисляется по формуле:\n\n```\nA⁻¹ = (1/det(A)) * adj(A)\n```\n\nгде:\n\n- `det(A)` — определитель матрицы\n- `adj(A)` — присоединённая (союзная) матрица\n\n### Cборка\n\nОткройте `обратная матрица.sln` в Visual Studio и соберите проект (Ctrl+Shift+B).\n\n## Использование\n\n1. Запустите скомпилированный исполняемый файл\n2. Введите размер матрицы n\n3. Программа выведет:\n    - Сгенерированную матрицу\n    - Определитель\n    - Обратную матрицу (если она существует)\n\nЕсли определитель равен 0, обратная матрица не существует.\n\n## Лицензия\n\nMIT\n" onclick="showDescription(this)">i</button></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Описание проекта</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-content" id="modal-content"></div>
+    </div>
+  </div>
+
+  <script>
+    function showDescription(btn) {
+      var description = btn.getAttribute('data-description');
+      description = description.replace(/\\n/g, '\n');
+      document.getElementById('modal-content').innerHTML = '<pre>' + escapeHtml(description) + '</pre>';
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal(event) {
+      if (!event || event.target === document.getElementById('modal')) {
+        document.getElementById('modal').classList.remove('open');
+      }
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>

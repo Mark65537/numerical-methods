@@ -1,0 +1,433 @@
+#include <iostream>//a[i,j]=1/(i+j-1)
+#include "Вращение.h"
+using namespace std;
+
+// Возвращает оценку нормы матрицы по строкам: max_i |sum_j A[i][j]|.
+// slay: квадратная матрица k?k.
+// k: размер матрицы.
+double norma(double** slay, int k)
+{
+	double* buf = new double[k], buf1 = 0;;
+	for (int i = 0; i < k; i++)
+		buf[i] = 0;
+	for (int i = 0; i < k; i++)
+	{
+		for (int j = 0; j < k; j++)
+			buf[i] += slay[i][j];
+	}
+	for (int i = 0; i < k; i++)
+	{
+
+		if (abs(buf[i]) >= buf1)
+			buf1 = abs(buf[i]);
+	}
+	return buf1;
+}
+
+
+
+// Заполняет матрицу Гилберта H размера k?k: H[i][j] = 1 / (i + j + 1).
+// slay: выделенная матрица k?k, заполняется на месте.
+// k: размер матрицы.
+void scan_1(double** slay, int k)
+{
+	for (int i = 0; i < k; i++)
+	{
+		for (int j = 0; j < k; j++)
+		{
+			double z = (i + j + 1);
+			slay[i][j] = 1 / z;
+			//cout << z << ' ';
+		}
+		cout << endl;
+	}
+}
+
+// Печатает матрицу k?k в консоль с фиксированной точностью.
+// slay: матрица k?k.
+// k: размер матрицы.
+void print(double** slay, int k)
+{
+	for (int i = 0; i < k; i++)
+	{
+		for (int j = 0; j < k; j++)
+			cout << fixed << setprecision(4) << slay[i][j] << ' ';
+		cout << endl;
+	}
+	cout << endl;
+}
+
+// Строит обратную матрицу A^{-1} для slay (A) через решение k СЛАУ вида A x = e_u.
+// slay: исходная матрица A (k?k), используется как коэффициенты.
+// k: размер матрицы.
+// slay1: выходная матрица A^{-1} (k?k), заполняется по столбцам.
+void obrmatr(double** slay, int k, double** slay1)
+{
+
+	double** E = new double* [k];
+	for (int i = 0; i < k; i++)
+	{
+		E[i] = new double[k];
+		for (int j = 0; j < k; j++)
+		{
+			if (i != j)
+				E[i][j] = 0;
+			else
+				E[i][i] = 1;
+		}
+	}
+	cout << "";
+	double** buf = new double* [k];
+	for (int i = 0; i < k; i++)
+		buf[i] = new double[k + 1];
+	int u = 0;
+	for (int i = 0; i < k; i++)
+	{
+		cout << endl;
+		for (int j = 0; j < k; j++)
+		{
+			for (int m = 0; m < k; m++)
+				buf[j][m] = slay[j][m];
+			buf[j][k] = E[u][j];
+		}
+		alg(buf, k);
+		//print(buf, k);
+		for (int j = 0; j < k; j++)
+			slay1[j][u] = buf[j][k];
+
+		u++;
+	}
+	print(slay1, k);
+	double** buf1 = new double* [k];
+	for (int i = 0; i < k; i++)
+	{
+		buf1[i] = new double[k];
+		buf[i] = 0;
+	}
+	for (int i = 0; i < k; i++)
+		for (int j = 0; j < k; j++) {
+			buf1[i][j] = 0;
+			for (int l = 0; l < k; l++)
+				buf1[i][j] += slay[i][l] * slay1[l][j];
+		}print(buf1, k);
+}
+
+// Точка входа: формирует матрицу Гилберта, находит её обратную, оценивает нормы и число обусловленности.
+int main()
+{
+	setlocale(0, "");
+	int k = 10;
+	//матрица Гилберта
+	double** slay = new double* [k];
+	for (int i = 0; i < k; i++)
+		slay[i] = new double[k];
+
+	//обратная матрица Гилберта
+	double** slay1 = new double* [k];
+	for (int i = 0; i < k; i++)
+		slay1[i] = new double[k];
+	scan_1(slay, k);
+	print(slay, k);
+	double n = norma(slay, k);
+	cout << "норма матрицы Гилберта " << n << endl;
+	obrmatr(slay, k, slay1);
+	double n1 = norma(slay1, k);
+
+	//число обусловленности q
+	double q = n1 * n;
+	cout << "число обусловленности матрицы Гилберта " << q << endl;
+	system("pause");
+	return 0;
+}0.0002 3.4 -1.8 2.1 2.3561
+3.7 -0.9 0.7 5.7 7.556
+-1.9 -2.7 5.3 2.9 -3.051
+18 4.1 7.3 -0.1 12.3340.0002 3.4 -1.8 2.1 2.3561
+3.7 -0.9 0.7 5.7 7.556
+-1.9 -2.7 5.3 2.9 -3.051
+18 4.1 7.3 -0.1 12.334
+0.521 -0.296 0 0.04 -0.21 0.24886
+-0.296 0.7 0.24 -0.32 0.06 -0.7012
+0     0.24 -0.35 0.07 0.21 0.1347
+0.04 -0.32 0.07 0.49 -0.03 0.4659
+-0.21 0.06 0.21 -0.03 0.63 -0.1749
+0.14 0.24 -0.84 1.11
+1.07 -0.83 0.56 0.48
+0.64 0.43 -0.38 -0.83#include <iostream>
+#include <fstream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+// Считает количество строк в файле `a1.txt` (использовалось для определения размерности).
+// Возвращает: число считанных строк (k).
+int scan1()
+{
+	int k = 0;
+	string buf;
+	ifstream f;
+	f.open("a1.txt");
+	if (f)
+	{
+		while (!f.eof())
+		{
+			getline(f, buf);
+			k++;
+		}
+		f.seekg(0, ios::beg);
+		f.close();
+	}
+	return k;
+}
+
+// Считывает матрицу k×k из файла `a1.txt` в slay.
+// slay: выделенная матрица k×k, заполняется на месте.
+// k: размер матрицы.
+void scan2(double** slay, int k)
+{
+	string buf;
+	ifstream f;
+	f.open("a1.txt");
+	while (!f.eof())
+	{
+
+		for (int i = 0; i < k; i++)
+			for (int j = 0; j < k; j++)
+				f >> slay[i][j];
+	}
+
+	f.close();
+}
+
+// Нормирует строку расширенной матрицы (делит на ведущий элемент).
+// slay: строка длины k+1 (k коэффициентов + правая часть).
+// k: размер системы (без правой части).
+// buf1: ведущий элемент, на который выполняется деление.
+void alg_1(double* slay, int k, double buf1)
+{
+	for (int j = 0; j < k + 1; j++)
+	{
+		slay[j] /= buf1;
+	}
+}
+
+// Выполняет обратный ход после приведения к верхнетреугольному виду:
+// нормирует диагональные элементы и зануляет элементы над диагональю.
+// slay: расширенная матрица k×(k+1), модифицируется на месте.
+// k: размер системы.
+void alg_2(double** slay, int k)
+{
+	double* buf = new double[k + 1], buf1, * buf2 = new double[k + 1];
+	int u;
+	for (int i = k - 1; i >= 0; i--)
+	{
+		buf1 = slay[i][i];
+		alg_1(slay[i], k, buf1);
+		u = 0;
+		for (int m = i; m > 0; m--)
+		{
+			u++;
+			for (int j = k + 1; j > 0; j--)
+			{
+				buf[j] = slay[i][j];
+				buf[j] *= slay[i - u][i];
+				slay[i - u][j] -= buf[j];
+			}
+			//print(slay,k);
+		}
+	}
+}
+
+// Решает СЛАУ методом вращений Гивенса для расширенной матрицы k×(k+1).
+// На выходе правая часть (последний столбец) содержит решение после обратного хода (`alg_2`).
+// slay: расширенная матрица [A|b], модифицируется на месте.
+// k: размер системы.
+void alg(double** slay, int k)
+{
+	double* buf = new double[k + 1], buf1, * buf2 = new double[k + 1], c, s;
+	int u;
+	for (int i = 0; i < k - 1; i++)
+	{
+		buf1 = slay[i][i];
+		u = 0;
+		for (int m = i; m < k - 1; m++)
+		{
+			u++;
+			c = slay[i][i] / (sqrt(slay[i][i] * slay[i][i] + slay[i + u][i] * slay[i + u][i]));
+			s = slay[i + u][i] / (sqrt(slay[i][i] * slay[i][i] + slay[i + u][i] * slay[i + u][i]));
+			//cout << c << " " << s << endl;
+			for (int j = 0; j < k + 1; j++)
+			{
+				buf[j] = slay[i][j] * c + slay[i + u][j] * s;
+				buf2[j] = slay[i + u][j] * c - slay[i][j] * s;
+			}
+			for (int j = 0; j < k + 1; j++)
+			{
+				if (j == i) slay[i + u][i] = 0;
+				slay[i][j] = buf[j];
+				slay[i + u][j] = buf2[j];
+
+			}
+			//print(slay,k);
+		}
+	}
+	alg_2(slay, k);
+}﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{1060d261-d1aa-4fb5-a6e6-7da64562aa6d}</ProjectGuid>
+    <RootNamespace>матрицаГилбертаивращение</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Вращение.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Файлы заголовков">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Вращение.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
