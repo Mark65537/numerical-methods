@@ -12,8 +12,8 @@ from dataclasses import dataclass
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 """Корень репозитория (директория проекта), вычисленный относительно этого скрипта."""
-GH_ACTION_OUTPUT = REPO_ROOT / "wasm-site"
-"""Каталог, куда складываются артефакты сборки WebAssembly-сайта."""
+PUBLISH_DIR = REPO_ROOT / "wasm-site"
+"""Каталог, куда складываются артефакты сборки WebAssembly-сайта. смотри в deploy-wasm.yml"""
 PROJECTS_DIR = REPO_ROOT / "src"
 """Каталог с подкаталогами проектов (каждый проект — папка с `.cpp` и точкой входа)."""
 STUB = REPO_ROOT / "wasm" / "emscripten-include"
@@ -69,10 +69,10 @@ def find_projects(projects_root: Path) -> list[Project]:
         if not has_entry:
             continue
 
-        # Читаем README.md полностью для спойлера
+        # Читаем README.md полностью для спойлера (на одну папку назад от проекта)
         description = ""
         full_description = ""
-        readme_path = path / "README.md"
+        readme_path = path.parent / "README.md"
         if readme_path.is_file():
             readme_text = readme_path.read_text(encoding="utf-8")
             full_description = readme_text
@@ -131,22 +131,19 @@ def main() -> None:
     - Копирует HTML-шаблон проекта и генерирует общий `index.html`
     """
     # Абсолютный путь к корневому каталогу артефактов сборки.
-    gh_action_output: Path = GH_ACTION_OUTPUT.resolve()
+    publish_dir: Path = PUBLISH_DIR.resolve()
     # Абсолютный путь к каталогу с проектами-исходниками.
     projects_root: Path = PROJECTS_DIR.resolve()
 
     # проверки на существование файлов и папок
-    if gh_action_output.exists():
-        shutil.rmtree(gh_action_output)
-    gh_action_output.mkdir(parents=True)
+    if publish_dir.exists():
+        shutil.rmtree(publish_dir)
+    publish_dir.mkdir(parents=True)
 
     if not projects_root.is_dir():
         print(f"error: projects dir not found: {projects_root}", file=sys.stderr)
         sys.exit(1)
 
-    if shutil.which("em++") is None:
-        print("error: em++ not found in PATH. Activate Emscripten SDK (emsdk_env) and retry.", file=sys.stderr)
-        sys.exit(1)
 
     if not TEMPLATE_HTML.is_file():
         print(f"error: missing template: {TEMPLATE_HTML}", file=sys.stderr)
@@ -156,10 +153,15 @@ def main() -> None:
         print(f"error: missing index template: {INDEX_TEMPLATE_PATH}", file=sys.stderr)
         sys.exit(1)
 
+    if not __debug__:
+        if shutil.which("em++") is None:
+            print("error: em++ not found in PATH. Activate Emscripten SDK (emsdk_env) and retry.", file=sys.stderr)
+            sys.exit(1)
+
     # Список проектов, найденных для сборки.
     projects : list[Project] = find_projects(projects_root)    
     # Сортировка проектов по slug для стабильного порядка в выводе и `index.html`.
-    # projects.sort(key=lambda t: t[0])
+    projects.sort(key=lambda t: t[0])
 
     if not projects:
         print("error: no projects found to build.", file=sys.stderr)
@@ -174,7 +176,7 @@ def main() -> None:
         srcdir = project.path.resolve()
 
         # Каталог артефактов для текущего проекта.
-        out_dir = gh_action_output / project.slug
+        out_dir = publish_dir / project.slug
         out_dir.mkdir(parents=True)
 
         # Базовые флаги компиляции/линковки Emscripten для веб-окружения.
@@ -208,7 +210,7 @@ def main() -> None:
         render_index(projects, INDEX_TEMPLATE_PATH.read_text(encoding="utf-8")),
         encoding="utf-8",
     )
-    shutil.copy(INDEX_TEMPLATE_PATH, gh_action_output / "index.html")
+    shutil.copy(INDEX_TEMPLATE_PATH, publish_dir / "index.html")
 
 if __name__ == "__main__":
     main()
